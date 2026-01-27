@@ -177,6 +177,38 @@
 
     reset();
     loop();
-  </script>
+  </script> <!-- WIN SCREEN -->
+<div id="winScreen" style="
+display:none;
+position:fixed;
+inset:0;
+background:black;
+color:pink;
+z-index:9999;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+font-family:system-ui;
+">
+
+<h1>💗 Wygrałeś 💗</h1>
+
+<img src="IMG_2704.jpeg" style="
+max-width:80%;
+border-radius:20px;
+border:4px solid pink;
+box-shadow:0 0 30px hotpink;
+margin:20px;
+">
+
+<p style="font-size:20px">
+Nagroda dla Ciebie 😘  
+Rozwiąż zagadkę, którą dostałeś na kartce...
+</p>
+
+<audio id="winMusic" src="win.mp3"></audio>
+
+</div>
 </body>
 </html>
