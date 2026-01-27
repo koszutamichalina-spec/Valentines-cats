@@ -61,7 +61,8 @@ cursor: pointer;
   border-radius:20px;
   box-shadow:0 0 40px hotpink;
 }
-</style>
+</.hidden { display:none !important; }style>
+  
 </head>
 
 <body>
@@ -197,3 +198,32 @@ function closeOverlay(){
 
 </body>
 </html>
+(function(){
+  const overlay = document.getElementById("overlay");
+  const btn = document.getElementById("closeOverlay");
+  const music = document.getElementById("music");
+
+  function forceClose(){
+    // brutalnie chowamy overlay (bez gadania z klasami)
+    if (music){ try{ music.pause(); music.currentTime = 0; }catch(e){} }
+    if (overlay){
+      overlay.classList.add("hidden");
+      overlay.style.display = "none";
+      overlay.style.pointerEvents = "none";
+    }
+    if (typeof restart === "function") restart();
+  }
+
+  // podpinka pod klik i dotyk
+  if (btn){
+    btn.onclick = forceClose;
+    btn.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
+  }
+  if (overlay){
+    overlay.addEventListener("click", forceClose);
+    overlay.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
+  }
+
+  // dla pewności wystawiamy globalnie
+  window.closeOverlay = forceClose;
+})();
