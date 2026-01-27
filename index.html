@@ -44,7 +44,8 @@ button{
 
 .hidden{display:none}
 
-#overlay{
+#overlay{pointer-events: auto;
+cursor: pointer;
   position:fixed;
   inset:0;
   background:rgba(0,0,0,.95);
@@ -183,10 +184,15 @@ function update(){
 }
 
 update();
-
+  document.getElementById("overlay").addEventListener("click", closeOverlay);
+document.getElementById("overlay").addEventListener("touchstart", closeOverlay);
 function closeOverlay(){
- location.reload();
+  document.getElementById("music").pause();
+  document.getElementById("music").currentTime = 0;
+  document.getElementById("overlay").classList.add("hidden");
+  restart(); // wraca do lvl 1
 }
+
 </script>
 
 </body>
