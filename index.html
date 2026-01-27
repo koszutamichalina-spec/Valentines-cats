@@ -82,7 +82,7 @@ cursor: pointer;
 <h2 id="overlayText"></h2>
 <img id="finalPhoto"/>
 <audio id="music" src="win.mp3"></audio>
-<button onclick="closeOverlay()">OK 💖</button>
+<button id="closeOverlay()">OK 💖</button>
 </div>
 
 <script>
@@ -197,6 +197,35 @@ function closeOverlay(){
 </script>
 
 </body>
+  (function(){
+  const overlay = document.getElementById("overlay");
+  const btn = document.getElementById("closeOverlay");
+  const music = document.getElementById("music");
+
+  function forceClose(){
+    // brutalnie chowamy overlay (bez gadania z klasami)
+    if (music){ try{ music.pause(); music.currentTime = 0; }catch(e){} }
+    if (overlay){
+      overlay.classList.add("hidden");
+      overlay.style.display = "none";
+      overlay.style.pointerEvents = "none";
+    }
+    if (typeof restart === "function") restart();
+  }
+
+  // podpinka pod klik i dotyk
+  if (btn){
+    btn.onclick = forceClose;
+    btn.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
+  }
+  if (overlay){
+    overlay.addEventListener("click", forceClose);
+    overlay.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
+  }
+
+  // dla pewności wystawiamy globalnie
+  window.closeOverlay = forceClose;
+})();
 </html>
 (function(){
   const overlay = document.getElementById("overlay");
