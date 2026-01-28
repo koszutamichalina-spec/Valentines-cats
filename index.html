@@ -1,258 +1,701 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Walentynkowe Kotki 💕</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Walentynkowe Kotki 💗</title>
+  <style>
+    :root { --pink: hotpink; }
+    body { margin:0; font-family: system-ui, -apple-system, Arial; background:#050505; color:#ffd7ea; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 16px; text-align:center; }
+    h1 { margin: 10px 0 6px; font-size: 28px; }
+    .sub { opacity:.85; margin: 0 0 10px; }
+    .bar { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin: 10px 0 12px; }
+    .pill, button {
+      border:2px solid var(--pink); border-radius:999px; padding:8px 12px; background:transparent; color:#ffd7ea; font-weight:800;
+    }
+    button { cursor:pointer; }
+    canvas { width:100%; height:auto; border:3px solid var(--pink); border-radius:16px; background:#0a0a0a; touch-action:none; box-shadow:0 0 28px rgba(255,105,180,.35); }
 
-<style>
-body{
-  margin:0;
-  background:linear-gradient(#050505,#150018);
-  color:#ffd6f0;
-  font-family:system-ui;
-  display:flex;
-  justify-content:center;
-}
+    /* Mobile pads */
+    .pads { display:flex; justify-content:space-between; gap:10px; margin-top: 10px; user-select:none; }
+    .pad {
+      width: 46%;
+      border:2px solid rgba(255,105,180,.7);
+      border-radius:18px;
+      padding:10px;
+      background: rgba(0,0,0,.25);
+      position: relative;
+      min-height: 150px;
+      touch-action:none;
+    }
+    .padTitle { font-weight:900; opacity:.9; margin-bottom:6px; }
+    .stickBase {
+      width:120px; height:120px; border-radius:999px;
+      border:2px solid rgba(255,105,180,.7);
+      margin: 10px auto 0;
+      position: relative;
+      background: rgba(255,105,180,.06);
+    }
+    .stickKnob {
+      width:54px; height:54px; border-radius:999px;
+      border:2px solid rgba(255,105,180,.9);
+      position: absolute; left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      background: rgba(0,0,0,.25);
+    }
+    .hint { font-size: 13px; opacity:.75; margin-top: 10px; }
 
-#wrapper{
-  max-width:900px;
-  padding:20px;
-  text-align:center;
-}
-
-h1{font-size:34px}
-
-canvas{
-  background:#080008;
-  border:3px solid hotpink;
-  border-radius:18px;
-  box-shadow:0 0 30px #ff4fcf;
-}
-
-#ui{
-  margin-top:10px;
-}
-
-button{
-  background:#ff6ad5;
-  border:none;
-  padding:10px 18px;
-  border-radius:12px;
-  font-weight:700;
-}
-
-.hidden{display:none}
-
-#overlay{pointer-events: auto;
-cursor: pointer;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.95);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  color:pink;
-  z-index:99;
-}
-#overlay img{
-  max-width:80%;
-  border-radius:20px;
-  box-shadow:0 0 40px hotpink;
-}
-</.hidden { display:none !important; }style>
-  
+    /* Overlays */
+    .overlay {
+      position: fixed; inset: 0;
+      display:none;
+      place-items:center;
+      background: rgba(0,0,0,.86);
+      padding: 18px;
+      z-index: 9999;
+    }
+    .card {
+      width: min(560px, 92vw);
+      background: #070707;
+      border: 3px solid var(--pink);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      text-align:left;
+    }
+    .card h2 { margin: 0 0 8px; }
+    .card p { margin: 0 0 10px; opacity:.9; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-top: 10px; }
+    input {
+      width:100%;
+      box-sizing:border-box;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,105,180,.7);
+      outline: none;
+      background: #0d0d0d;
+      color: #ffd7ea;
+      font-weight: 700;
+      margin: 6px 0 10px;
+    }
+    .imgWin {
+      width:100%;
+      border-radius:14px;
+      border:2px solid rgba(255,105,180,.75);
+      box-shadow: 0 0 26px rgba(255,105,180,.25);
+      margin-top: 8px;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <h1>Walentynkowe Kotki 💗</h1>
+    <p class="sub">Telefon: joysticki na dole • Komp: strzałki + WASD</p>
 
-<div id="wrapper">
-<h1>Walentynkowe Kotki 💕</h1>
-<p>⬅️➡️ = kot 1 | WASD = kot 2</p>
+    <div class="bar">
+      <div class="pill">Level: <span id="lvl">1</span>/4</div>
+      <div class="pill">Serduszka: <span id="gems">0</span>/<span id="gemsTotal">0</span></div>
+      <button id="restartBtn">Restart</button>
+    </div>
 
-<canvas id="game" width="820" height="460"></canvas>
+    <canvas id="cv" width="900" height="520"></canvas>
 
-<div id="ui">
-<button onclick="restart()">Restart</button>
-</div>
-</div>
+    <div class="pads">
+      <div class="pad" id="pad1">
+        <div class="padTitle">Kotek 1</div>
+        <div class="stickBase"><div class="stickKnob" id="knob1"></div></div>
+      </div>
+      <div class="pad" id="pad2">
+        <div class="padTitle">Kotek 2</div>
+        <div class="stickBase"><div class="stickKnob" id="knob2"></div></div>
+      </div>
+    </div>
 
-<div id="overlay" class="hidden">
-<h2 id="overlayText"></h2>
-<img id="finalPhoto"/>
-<audio id="music" src="win.mp3"></audio>
-<button id="closeOverlay()">OK 💖</button>
-</div>
+    <div class="hint">Tip: jak kotki są blisko → pojawia się małe 💗. Drzwi z sercem otwierają się, gdy OBA kotki wejdą do środka.</div>
+  </div>
+
+  <!-- QUIZ overlay -->
+  <div class="overlay" id="quizOverlay">
+    <div class="card">
+      <h2>Mini quiz 💌</h2>
+      <p>Odpowiedz na 2 pytania, a potem dostaniesz nagrodę 😼💗</p>
+
+      <label><b>Pytanie 1:</b> Jakie hasło masz na kartce? (wpisz dokładnie)</label>
+      <input id="q1" placeholder="np. SERDUSZKO" />
+
+      <label><b>Pytanie 2:</b> Ile było leveli w grze?</label>
+      <input id="q2" placeholder="np. 4" />
+
+      <div id="quizMsg" style="min-height:18px; opacity:.9;"></div>
+
+      <div class="row">
+        <button id="quizCheck">Sprawdź 💖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIN overlay -->
+  <div class="overlay" id="winOverlay">
+    <div class="card">
+      <h2>Wygrałeś 💗</h2>
+      <p>To Twoja nagroda…</p>
+      <img class="imgWin" src="IMG_2704.jpeg" alt="nasze zdjęcie" />
+      <p style="margin-top:10px; font-weight:800;">Kocham Cię. — Misia 💘</p>
+
+      <audio id="winMusic" src="win.mp3" preload="auto"></audio>
+
+      <div class="row">
+        <button id="playMusic">Odtwórz muzykę 🎶</button>
+        <button id="closeWin">Zamknij</button>
+      </div>
+      <p style="font-size:12px; opacity:.7; margin-top:8px;">Na iPhonie muzyka startuje po kliknięciu (taki urok telefonu).</p>
+    </div>
+  </div>
 
 <script>
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
+(() => {
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d");
 
-let keys={};
+  const lvlEl = document.getElementById("lvl");
+  const gemsEl = document.getElementById("gems");
+  const gemsTotalEl = document.getElementById("gemsTotal");
+  const restartBtn = document.getElementById("restartBtn");
 
-document.addEventListener("keydown",e=>keys[e.key]=true);
-document.addEventListener("keyup",e=>keys[e.key]=false);
+  const quizOverlay = document.getElementById("quizOverlay");
+  const winOverlay = document.getElementById("winOverlay");
+  const quizCheck = document.getElementById("quizCheck");
+  const quizMsg = document.getElementById("quizMsg");
+  const q1 = document.getElementById("q1");
+  const q2 = document.getElementById("q2");
+  const winMusic = document.getElementById("winMusic");
+  const playMusic = document.getElementById("playMusic");
+  const closeWin = document.getElementById("closeWin");
 
-const cat1={x:100,y:200,c:"#ffb3d9"};
-const cat2={x:160,y:200,c:"#9ae7ff"};
+  // USTAW to hasło na takie, jakie napiszesz mu na kartce:
+  const SECRET_WORD = "SERDUSZKO";
 
-let level=0;
+  // ---------- Simple level data ----------
+  // walls: rectangles; spikes: rectangles (hurt); gems: circles; door: rect
+  const levels = [
+    {
+      bg: { r: 10, g: 0, b: 18 }, // dark
+      walls: [
+        {x: 0, y: 0, w: 900, h: 24},
+        {x: 0, y: 496, w: 900, h: 24},
+        {x: 0, y: 0, w: 24, h: 520},
+        {x: 876, y: 0, w: 24, h: 520},
 
-const levels=[
- {door:{x:700,y:170}},
- {door:{x:50,y:50}},
- {door:{x:700,y:300}}
-];
+        {x: 160, y: 90, w: 18, h: 340},
+        {x: 320, y: 24, w: 18, h: 300},
+        {x: 480, y: 170, w: 18, h: 326},
+        {x: 640, y: 24, w: 18, h: 280},
+      ],
+      spikes: [
+        {x: 240, y: 496-24, w: 120, h: 24},
+        {x: 520, y: 496-24, w: 120, h: 24},
+      ],
+      gems: [
+        {x: 110, y: 60}, {x: 410, y: 120}, {x: 710, y: 90}
+      ],
+      door: {x: 820, y: 220, w: 56, h: 90}
+    },
+    {
+      bg: { r: 35, g: 0, b: 45 },
+      walls: [
+        {x: 0, y: 0, w: 900, h: 24},
+        {x: 0, y: 496, w: 900, h: 24},
+        {x: 0, y: 0, w: 24, h: 520},
+        {x: 876, y: 0, w: 24, h: 520},
 
-function drawCat(c){
- ctx.beginPath();
- ctx.arc(c.x,c.y,12,0,Math.PI*2);
- ctx.fillStyle=c.c;
- ctx.fill();
-}
+        {x: 120, y: 120, w: 660, h: 18},
+        {x: 120, y: 380, w: 660, h: 18},
+        {x: 120, y: 138, w: 18, h: 242},
+        {x: 762, y: 138, w: 18, h: 242},
 
-function controls(){
- if(keys.ArrowLeft)cat1.x-=3;
- if(keys.ArrowRight)cat1.x+=3;
- if(keys.ArrowUp)cat1.y-=3;
- if(keys.ArrowDown)cat1.y+=3;
+        {x: 420, y: 138, w: 18, h: 150},
+        {x: 240, y: 250, w: 360, h: 18},
+      ],
+      spikes: [
+        {x: 120, y: 250+18, w: 120, h: 18},
+        {x: 600, y: 250+18, w: 180, h: 18},
+      ],
+      gems: [
+        {x: 160, y: 80}, {x: 740, y: 80}, {x: 450, y: 460}
+      ],
+      door: {x: 38, y: 215, w: 56, h: 90}
+    },
+    {
+      bg: { r: 60, g: 0, b: 75 },
+      walls: [
+        {x: 0, y: 0, w: 900, h: 24},
+        {x: 0, y: 496, w: 900, h: 24},
+        {x: 0, y: 0, w: 24, h: 520},
+        {x: 876, y: 0, w: 24, h: 520},
 
- if(keys.a)cat2.x-=3;
- if(keys.d)cat2.x+=3;
- if(keys.w)cat2.y-=3;
- if(keys.s)cat2.y+=3;
-}
+        {x: 140, y: 70, w: 620, h: 18},
+        {x: 140, y: 420, w: 620, h: 18},
+        {x: 140, y: 88, w: 18, h: 332},
+        {x: 742, y: 88, w: 18, h: 332},
 
-function drawDoor(){
- let d=levels[level].door;
- ctx.strokeStyle="hotpink";
- ctx.lineWidth=3;
- ctx.strokeRect(d.x,d.y,40,60);
- ctx.fillText("💗",d.x+8,d.y+38);
-}
+        {x: 260, y: 180, w: 18, h: 240},
+        {x: 380, y: 88, w: 18, h: 240},
+        {x: 500, y: 180, w: 18, h: 240},
+        {x: 620, y: 88, w: 18, h: 240},
+      ],
+      spikes: [
+        {x: 158, y: 88, w: 102, h: 18},
+        {x: 398, y: 496-42, w: 120, h: 18},
+      ],
+      gems: [
+        {x: 200, y: 460}, {x: 700, y: 460}, {x: 450, y: 50}
+      ],
+      door: {x: 820, y: 220, w: 56, h: 90}
+    },
+    {
+      bg: { r: 95, g: 0, b: 110 }, // more pink
+      walls: [
+        {x: 0, y: 0, w: 900, h: 24},
+        {x: 0, y: 496, w: 900, h: 24},
+        {x: 0, y: 0, w: 24, h: 520},
+        {x: 876, y: 0, w: 24, h: 520},
 
-function checkTogether(){
- const dx=cat1.x-cat2.x;
- const dy=cat1.y-cat2.y;
- return Math.hypot(dx,dy)<28;
-}
+        {x: 110, y: 90, w: 18, h: 330},
+        {x: 240, y: 24, w: 18, h: 330},
+        {x: 370, y: 90, w: 18, h: 330},
+        {x: 500, y: 24, w: 18, h: 330},
+        {x: 630, y: 90, w: 18, h: 330},
+        {x: 760, y: 24, w: 18, h: 330},
 
-function drawHeart(){
- ctx.fillText("💗",(cat1.x+cat2.x)/2-5,(cat1.y+cat2.y)/2-15);
-}
+        {x: 110, y: 420, w: 668, h: 18},
+      ],
+      spikes: [
+        {x: 24, y: 250, w: 86, h: 18},
+        {x: 778, y: 250, w: 98, h: 18},
+        {x: 320, y: 420-18, w: 260, h: 18},
+      ],
+      gems: [
+        {x: 70, y: 60}, {x: 830, y: 60}, {x: 450, y: 470}, {x: 450, y: 140}
+      ],
+      door: {x: 422, y: 36, w: 56, h: 90}
+    },
+  ];
 
-function nextLevel(){
- level++;
- if(level>=levels.length){
-   showFinal();
- }
-}
+  // ---------- Controls (keyboard + joysticks) ----------
+  const key = {};
+  window.addEventListener("keydown", e => key[e.key.toLowerCase()] = true);
+  window.addEventListener("keyup", e => key[e.key.toLowerCase()] = false);
 
-function showFinal(){
- document.getElementById("overlay").classList.remove("hidden");
- document.getElementById("overlayText").innerText="Wygrałaś 💖 Teraz nagroda…";
- document.getElementById("finalPhoto").src="IMG_2704.jpeg";
- document.getElementById("music").play();
-}
+  const pad1 = document.getElementById("pad1");
+  const pad2 = document.getElementById("pad2");
+  const knob1 = document.getElementById("knob1");
+  const knob2 = document.getElementById("knob2");
 
-function restart(){
- cat1.x=100;
- cat2.x=160;
- level=0;
-}
+  function makeStick(pad, knob){
+    const st = { active:false, id:null, dx:0, dy:0, cx:0, cy:0 };
+    const base = pad.querySelector(".stickBase");
+    function setKnob(dx,dy){
+      // clamp to circle
+      const r = 42;
+      const len = Math.hypot(dx,dy);
+      const k = len > r ? r/len : 1;
+      const x = dx*k, y = dy*k;
+      knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+      st.dx = x/r; st.dy = y/r;
+    }
+    function reset(){
+      st.active=false; st.id=null; st.dx=0; st.dy=0;
+      knob.style.transform = "translate(-50%,-50%)";
+    }
+    base.addEventListener("pointerdown", (e) => {
+      base.setPointerCapture(e.pointerId);
+      st.active=true; st.id=e.pointerId;
+      const rect = base.getBoundingClientRect();
+      st.cx = rect.left + rect.width/2;
+      st.cy = rect.top + rect.height/2;
+      setKnob(e.clientX - st.cx, e.clientY - st.cy);
+    });
+    base.addEventListener("pointermove", (e) => {
+      if(!st.active || e.pointerId !== st.id) return;
+      setKnob(e.clientX - st.cx, e.clientY - st.cy);
+    });
+    base.addEventListener("pointerup", (e) => { if(e.pointerId===st.id) reset(); });
+    base.addEventListener("pointercancel", (e) => { if(e.pointerId===st.id) reset(); });
+    return st;
+  }
 
-function update(){
- ctx.clearRect(0,0,canvas.width,canvas.height);
- ctx.font="20px Arial";
+  const stick1 = makeStick(pad1, knob1);
+  const stick2 = makeStick(pad2, knob2);
 
- controls();
- drawCat(cat1);
- drawCat(cat2);
- drawDoor();
+  // ---------- Game state ----------
+  let L = 0;
+  let gemsCollected = 0;
 
- if(checkTogether())drawHeart();
+  const catA = { x: 90, y: 420, r: 14 };
+  const catB = { x: 140, y: 420, r: 14 };
 
- const d=levels[level].door;
- if(cat1.x>d.x && cat1.x<d.x+40 &&
-    cat2.x>d.x && cat2.x<d.x+40 &&
-    cat1.y>d.y && cat1.y<d.y+60 &&
-    cat2.y>d.y && cat2.y<d.y+60){
-     nextLevel();
- }
+  function resetLevel(){
+    const door = levels[L].door;
+    // spawn opposite to door
+    if (door.x > cv.width/2){
+      catA.x = 70; catB.x = 120;
+      catA.y = cv.height - 70; catB.y = cv.height - 70;
+    } else {
+      catA.x = cv.width - 70; catB.x = cv.width - 120;
+      catA.y = cv.height - 70; catB.y = cv.height - 70;
+    }
+  }
 
- requestAnimationFrame(update);
-}
+  function currentGems(){
+    return levels[L].gems.map(g => ({...g, taken:false}));
+  }
+  let gems = currentGems();
 
-update();
-  document.getElementById("overlay").addEventListener("click", closeOverlay);
-document.getElementById("overlay").addEventListener("touchstart", closeOverlay);
-function closeOverlay(){
-  document.getElementById("music").pause();
-  document.getElementById("music").currentTime = 0;
-  document.getElementById("overlay").classList.add("hidden");
-  restart(); // wraca do lvl 1
-}
+  function setUI(){
+    lvlEl.textContent = String(L+1);
+    gemsCollected = 0;
+    gemsEl.textContent = "0";
+    gemsTotalEl.textContent = String(gems.length);
+  }
 
+  function startLevel(n){
+    L = n;
+    gems = currentGems();
+    setUI();
+    resetLevel();
+  }
+
+  startLevel(0);
+
+  // ---------- Collision helpers ----------
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function circleRectCollide(cx,cy,r, rect){
+    const x = clamp(cx, rect.x, rect.x+rect.w);
+    const y = clamp(cy, rect.y, rect.y+rect.h);
+    return (cx-x)**2 + (cy-y)**2 <= r**2;
+  }
+
+  function moveWithCollisions(cat, vx, vy){
+    // move x
+    cat.x += vx;
+    for(const w of levels[L].walls){
+      if(circleRectCollide(cat.x,cat.y,cat.r,w)){
+        cat.x -= vx;
+        break;
+      }
+    }
+    // move y
+    cat.y += vy;
+    for(const w of levels[L].walls){
+      if(circleRectCollide(cat.x,cat.y,cat.r,w)){
+        cat.y -= vy;
+        break;
+      }
+    }
+    // keep inside canvas
+    cat.x = clamp(cat.x, cat.r, cv.width - cat.r);
+    cat.y = clamp(cat.y, cat.r, cv.height - cat.r);
+  }
+
+  function hitSpikes(cat){
+    for(const s of levels[L].spikes){
+      if(circleRectCollide(cat.x,cat.y,cat.r,s)) return true;
+    }
+    return false;
+  }
+
+  function inDoor(cat){
+    const d = levels[L].door;
+    return circleRectCollide(cat.x,cat.y,cat.r, d);
+  }
+
+  function nearTogether(){
+    return Math.hypot(catA.x-catB.x, catA.y-catB.y) < 48;
+  }
+
+  // ---------- Draw ----------
+  function bgFill(){
+    const b = levels[L].bg;
+    // subtle gradient
+    const grad = ctx.createLinearGradient(0,0,0,cv.height);
+    grad.addColorStop(0, `rgb(${b.r},${b.g},${b.b})`);
+    grad.addColorStop(1, `rgb(${Math.max(0,b.r-10)},${b.g},${Math.max(0,b.b-20)})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,cv.width,cv.height);
+
+    // faint stars/specks
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = "#fff";
+    for(let i=0;i<38;i++){
+      const x = (i*97 + (L+1)*53) % cv.width;
+      const y = (i*71 + (L+1)*29) % cv.height;
+      ctx.fillRect(x,y,2,2);
+    }
+    ctx.restore();
+  }
+
+  function drawWalls(){
+    ctx.save();
+    ctx.fillStyle = "rgba(255,105,180,.22)";
+    for(const w of levels[L].walls) ctx.fillRect(w.x,w.y,w.w,w.h);
+
+    // outline
+    ctx.strokeStyle = "rgba(255,105,180,.7)";
+    ctx.lineWidth = 2;
+    for(const w of levels[L].walls) ctx.strokeRect(w.x,w.y,w.w,w.h);
+    ctx.restore();
+  }
+
+  function drawSpikes(){
+    ctx.save();
+    ctx.fillStyle = "rgba(255,105,180,.22)";
+    ctx.strokeStyle = "rgba(255,105,180,.8)";
+    ctx.lineWidth = 2;
+    for(const s of levels[L].spikes){
+      ctx.strokeRect(s.x,s.y,s.w,s.h);
+      // little triangles
+      const n = Math.max(3, Math.floor(s.w/18));
+      for(let i=0;i<n;i++){
+        const x0 = s.x + i*(s.w/n);
+        const x1 = s.x + (i+1)*(s.w/n);
+        const xm = (x0+x1)/2;
+        ctx.beginPath();
+        ctx.moveTo(x0, s.y+s.h);
+        ctx.lineTo(xm, s.y);
+        ctx.lineTo(x1, s.y+s.h);
+        ctx.closePath();
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawDoor(){
+    const d = levels[L].door;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,105,180,.95)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(d.x,d.y,d.w,d.h);
+
+    // heart inside
+    const x = d.x + d.w/2;
+    const y = d.y + d.h/2 + 6;
+    const s = 16;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x - s, y - s, x - 2*s, y + s/2, x, y + 2*s);
+    ctx.bezierCurveTo(x + 2*s, y + s/2, x + s, y - s, x, y);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGems(){
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,105,180,.95)";
+    ctx.lineWidth = 2.5;
+    for(const g of gems){
+      if(g.taken) continue;
+      const x=g.x, y=g.y, s=10;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x - s, y - s, x - 2*s, y + s/2, x, y + 2*s);
+      ctx.bezierCurveTo(x + 2*s, y + s/2, x + s, y - s, x, y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawCats(){
+    // simple cute heads (placeholder)
+    function catFace(cat, tint){
+      ctx.save();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = "rgba(255,105,180,.9)";
+      ctx.fillStyle = tint;
+
+      // head
+      ctx.beginPath();
+      ctx.arc(cat.x,cat.y,cat.r,0,Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      // ears
+      ctx.beginPath();
+      ctx.moveTo(cat.x - cat.r*0.6, cat.y - cat.r*0.6);
+      ctx.lineTo(cat.x - cat.r*0.2, cat.y - cat.r*1.35);
+      ctx.lineTo(cat.x, cat.y - cat.r*0.7);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(cat.x + cat.r*0.6, cat.y - cat.r*0.6);
+      ctx.lineTo(cat.x + cat.r*0.2, cat.y - cat.r*1.35);
+      ctx.lineTo(cat.x, cat.y - cat.r*0.7);
+      ctx.stroke();
+
+      // eyes
+      ctx.beginPath(); ctx.arc(cat.x - cat.r*0.25, cat.y - cat.r*0.05, 2.2, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cat.x + cat.r*0.25, cat.y - cat.r*0.05, 2.2, 0, Math.PI*2); ctx.stroke();
+
+      // mouth
+      ctx.beginPath();
+      ctx.moveTo(cat.x, cat.y + 2);
+      ctx.lineTo(cat.x, cat.y + 8);
+      ctx.moveTo(cat.x, cat.y + 8);
+      ctx.lineTo(cat.x - 7, cat.y + 13);
+      ctx.moveTo(cat.x, cat.y + 8);
+      ctx.lineTo(cat.x + 7, cat.y + 13);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+    catFace(catA, "rgba(255, 240, 248, .85)");
+    catFace(catB, "rgba(255, 210, 232, .65)");
+  }
+
+  function drawTogetherHeart(){
+    const x = (catA.x + catB.x)/2;
+    const y = (catA.y + catB.y)/2 - 28;
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,105,180,.95)";
+    ctx.lineWidth = 3;
+    const s = 12;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x - s, y - s, x - 2*s, y + s/2, x, y + 2*s);
+    ctx.bezierCurveTo(x + 2*s, y + s/2, x + s, y - s, x, y);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ---------- Game loop ----------
+  let running = true;
+
+  function step(){
+    if(!running) return;
+
+    // velocities from keyboard + sticks
+    const spd = 3.0;
+
+    // cat A (arrow keys OR left stick)
+    let ax = 0, ay = 0;
+    if(key["arrowleft"]) ax -= 1;
+    if(key["arrowright"]) ax += 1;
+    if(key["arrowup"]) ay -= 1;
+    if(key["arrowdown"]) ay += 1;
+    ax += stick1.dx;
+    ay += stick1.dy;
+
+    // cat B (WASD OR right stick)
+    let bx = 0, by = 0;
+    if(key["a"]) bx -= 1;
+    if(key["d"]) bx += 1;
+    if(key["w"]) by -= 1;
+    if(key["s"]) by += 1;
+    bx += stick2.dx;
+    by += stick2.dy;
+
+    // normalize
+    const al = Math.hypot(ax,ay) || 1;
+    const bl = Math.hypot(bx,by) || 1;
+
+    moveWithCollisions(catA, (ax/al)*spd, (ay/al)*spd);
+    moveWithCollisions(catB, (bx/bl)*spd, (by/bl)*spd);
+
+    // spikes = restart level
+    if(hitSpikes(catA) || hitSpikes(catB)){
+      resetLevel();
+      // reset gems for this level (optional: keep them collected; I reset to be fair)
+      gems = currentGems();
+      setUI();
+    }
+
+    // collect gems
+    for(const g of gems){
+      if(g.taken) continue;
+      if(Math.hypot(catA.x-g.x, catA.y-g.y) < catA.r + 12 ||
+         Math.hypot(catB.x-g.x, catB.y-g.y) < catB.r + 12){
+        g.taken = true;
+        gemsCollected += 1;
+        gemsEl.textContent = String(gemsCollected);
+      }
+    }
+
+    // win level if both in door AND all gems taken
+    const allTaken = gemsCollected >= gems.length;
+    if(allTaken && inDoor(catA) && inDoor(catB)){
+      if(L < 3){
+        startLevel(L+1);
+      } else {
+        // finished game -> quiz
+        running = false;
+        quizOverlay.style.display = "grid";
+      }
+    }
+
+    // draw
+    bgFill();
+    drawWalls();
+    drawSpikes();
+    drawGems();
+    drawDoor();
+    drawCats();
+    if(nearTogether()) drawTogetherHeart();
+
+    // info hint inside canvas
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,.75)";
+    ctx.font = "700 14px system-ui";
+    if(gemsCollected < gems.length){
+      ctx.fillText("Zbierz wszystkie serduszka, potem wejdźcie OBA do drzwi 💗", 24, 44);
+    } else {
+      ctx.fillText("Macie komplet! Wejdźcie OBA do drzwi 💗", 24, 44);
+    }
+    ctx.restore();
+
+    requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+
+  // ---------- UI actions ----------
+  restartBtn.addEventListener("click", () => startLevel(0));
+
+  // ---------- Quiz logic ----------
+  function norm(s){ return (s||"").trim().toUpperCase(); }
+
+  quizCheck.addEventListener("click", () => {
+    const a1 = norm(q1.value);
+    const a2 = norm(q2.value);
+
+    if(a1 === norm(SECRET_WORD) && a2 === "4"){
+      quizOverlay.style.display = "none";
+      winOverlay.style.display = "grid";
+      quizMsg.textContent = "";
+    } else {
+      quizMsg.textContent = "Niee 😼 spróbuj jeszcze (hasło z kartki + liczba leveli).";
+    }
+  });
+
+  // ---------- Win overlay ----------
+  playMusic.addEventListener("click", async () => {
+    try { await winMusic.play(); } catch(e) {}
+  });
+
+  closeWin.addEventListener("click", () => {
+    winOverlay.style.display = "none";
+    try { winMusic.pause(); winMusic.currentTime = 0; } catch(e) {}
+    // restart whole game
+    running = true;
+    startLevel(0);
+    requestAnimationFrame(step);
+  });
+})();
 </script>
-
 </body>
-  (function(){
-  const overlay = document.getElementById("overlay");
-  const btn = document.getElementById("closeOverlay");
-  const music = document.getElementById("music");
-
-  function forceClose(){
-    // brutalnie chowamy overlay (bez gadania z klasami)
-    if (music){ try{ music.pause(); music.currentTime = 0; }catch(e){} }
-    if (overlay){
-      overlay.classList.add("hidden");
-      overlay.style.display = "none";
-      overlay.style.pointerEvents = "none";
-    }
-    if (typeof restart === "function") restart();
-  }
-
-  // podpinka pod klik i dotyk
-  if (btn){
-    btn.onclick = forceClose;
-    btn.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
-  }
-  if (overlay){
-    overlay.addEventListener("click", forceClose);
-    overlay.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
-  }
-
-  // dla pewności wystawiamy globalnie
-  window.closeOverlay = forceClose;
-})();
 </html>
-(function(){
-  const overlay = document.getElementById("overlay");
-  const btn = document.getElementById("closeOverlay");
-  const music = document.getElementById("music");
-
-  function forceClose(){
-    // brutalnie chowamy overlay (bez gadania z klasami)
-    if (music){ try{ music.pause(); music.currentTime = 0; }catch(e){} }
-    if (overlay){
-      overlay.classList.add("hidden");
-      overlay.style.display = "none";
-      overlay.style.pointerEvents = "none";
-    }
-    if (typeof restart === "function") restart();
-  }
-
-  // podpinka pod klik i dotyk
-  if (btn){
-    btn.onclick = forceClose;
-    btn.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
-  }
-  if (overlay){
-    overlay.addEventListener("click", forceClose);
-    overlay.addEventListener("touchstart", function(e){ e.preventDefault(); forceClose(); }, {passive:false});
-  }
-
-  // dla pewności wystawiamy globalnie
-  window.closeOverlay = forceClose;
-})();
