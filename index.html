@@ -119,7 +119,7 @@
   <div class="overlay" id="quizOverlay">
     <div class="card">
       <h2>Mini quiz 💌</h2>
-      <p>Odpowiedz na 2 pytania, a potem dostaniesz nagrodę 😼💗</p>
+      <p>Odpowiedz na 2 pytania, a potem odbierzesz nagrodę 😼💗</p>
 
       <label><b>Pytanie 1:</b> Jakie hasło masz na kartce? (wpisz dokładnie)</label>
       <input id="q1" placeholder="np. SERDUSZKO" />
@@ -138,18 +138,28 @@
   <!-- WIN overlay -->
   <div class="overlay" id="winOverlay">
     <div class="card">
-      <h2>Wygrałeś 💗</h2>
-      <p>To Twoja nagroda…</p>
-      <img class="imgWin" src="IMG_2704.jpeg" alt="nasze zdjęcie" />
-      <p style="margin-top:10px; font-weight:800;">Kocham Cię. — Misia 💘</p>
+      <h2>Ostatni krok 💗</h2>
 
-      <audio id="winMusic" src="win.mp3" preload="auto"></audio>
-
-      <div class="row">
-        <button id="playMusic">Odtwórz muzykę 🎶</button>
-        <button id="closeWin">Zamknij</button>
+      <div id="rewardHidden">
+        <p style="font-weight:900; margin:0 0 10px;">Kliknij, by otrzymać nagrodę 🎁</p>
+        <div class="row" style="justify-content:flex-start;">
+          <button id="claimReward">ODBIERZ NAGRODĘ 💞</button>
+          <button id="closeWin">Zamknij</button>
+        </div>
+        <p style="font-size:12px; opacity:.7; margin-top:8px;">Na iPhonie muzyka startuje dopiero po kliknięciu.</p>
       </div>
-      <p style="font-size:12px; opacity:.7; margin-top:8px;">Na iPhonie muzyka startuje po kliknięciu (taki urok telefonu).</p>
+
+      <div id="rewardShown" style="display:none;">
+        <p>To Twoja nagroda…</p>
+        <img class="imgWin" src="IMG_2704.jpeg" alt="nasze zdjęcie" onerror="this.style.display='none'"/>
+        <p style="margin-top:10px; font-weight:800;">Kocham Cię. — Misia 💘</p>
+        <div class="row">
+          <button id="closeWin2">Zamknij</button>
+        </div>
+      </div>
+
+      <!-- audio -->
+      <audio id="winMusic" src="win.mp3" preload="auto"></audio>
     </div>
   </div>
 
@@ -169,25 +179,27 @@
   const quizMsg = document.getElementById("quizMsg");
   const q1 = document.getElementById("q1");
   const q2 = document.getElementById("q2");
+
   const winMusic = document.getElementById("winMusic");
-  const playMusic = document.getElementById("playMusic");
+
+  const rewardHidden = document.getElementById("rewardHidden");
+  const rewardShown = document.getElementById("rewardShown");
+  const claimReward = document.getElementById("claimReward");
   const closeWin = document.getElementById("closeWin");
+  const closeWin2 = document.getElementById("closeWin2");
 
   // USTAW to hasło na takie, jakie napiszesz mu na kartce:
   const SECRET_WORD = "SERDUSZKO";
 
-  // ---------- Simple level data ----------
-  // walls: rectangles; spikes: rectangles (hurt); gems: circles; door: rect
-  // (TU SĄ JUŻ TYLKO 3 LEVELE)
+  // ---------- Simple level data (3 levele) ----------
   const levels = [
     {
-      bg: { r: 10, g: 0, b: 18 }, // dark
+      bg: { r: 10, g: 0, b: 18 },
       walls: [
         {x: 0, y: 0, w: 900, h: 24},
         {x: 0, y: 496, w: 900, h: 24},
         {x: 0, y: 0, w: 24, h: 520},
         {x: 876, y: 0, w: 24, h: 520},
-
         {x: 160, y: 90, w: 18, h: 340},
         {x: 320, y: 24, w: 18, h: 300},
         {x: 480, y: 170, w: 18, h: 326},
@@ -197,9 +209,7 @@
         {x: 240, y: 496-24, w: 120, h: 24},
         {x: 520, y: 496-24, w: 120, h: 24},
       ],
-      gems: [
-        {x: 110, y: 60}, {x: 410, y: 120}, {x: 710, y: 90}
-      ],
+      gems: [{x: 110, y: 60}, {x: 410, y: 120}, {x: 710, y: 90}],
       door: {x: 820, y: 220, w: 56, h: 90}
     },
     {
@@ -209,22 +219,18 @@
         {x: 0, y: 496, w: 900, h: 24},
         {x: 0, y: 0, w: 24, h: 520},
         {x: 876, y: 0, w: 24, h: 520},
-
         {x: 120, y: 120, w: 660, h: 18},
         {x: 120, y: 380, w: 660, h: 18},
         {x: 120, y: 138, w: 18, h: 242},
         {x: 762, y: 138, w: 18, h: 242},
-
         {x: 420, y: 138, w: 18, h: 150},
         {x: 240, y: 250, w: 360, h: 18},
       ],
       spikes: [
-        {x: 120, y: 250+18, w: 120, h: 18},
-        {x: 600, y: 250+18, w: 180, h: 18},
+        {x: 120, y: 268, w: 120, h: 18},
+        {x: 600, y: 268, w: 180, h: 18},
       ],
-      gems: [
-        {x: 160, y: 80}, {x: 740, y: 80}, {x: 450, y: 460}
-      ],
+      gems: [{x: 160, y: 80}, {x: 740, y: 80}, {x: 450, y: 460}],
       door: {x: 38, y: 215, w: 56, h: 90}
     },
     {
@@ -234,12 +240,10 @@
         {x: 0, y: 496, w: 900, h: 24},
         {x: 0, y: 0, w: 24, h: 520},
         {x: 876, y: 0, w: 24, h: 520},
-
         {x: 140, y: 70, w: 620, h: 18},
         {x: 140, y: 420, w: 620, h: 18},
         {x: 140, y: 88, w: 18, h: 332},
         {x: 742, y: 88, w: 18, h: 332},
-
         {x: 260, y: 180, w: 18, h: 240},
         {x: 380, y: 88, w: 18, h: 240},
         {x: 500, y: 180, w: 18, h: 240},
@@ -247,11 +251,9 @@
       ],
       spikes: [
         {x: 158, y: 88, w: 102, h: 18},
-        {x: 398, y: 496-42, w: 120, h: 18},
+        {x: 398, y: 454, w: 120, h: 18},
       ],
-      gems: [
-        {x: 200, y: 460}, {x: 700, y: 460}, {x: 450, y: 50}
-      ],
+      gems: [{x: 200, y: 460}, {x: 700, y: 460}, {x: 450, y: 50}],
       door: {x: 820, y: 220, w: 56, h: 90}
     }
   ];
@@ -352,17 +354,11 @@
   function moveWithCollisions(cat, vx, vy){
     cat.x += vx;
     for(const w of levels[L].walls){
-      if(circleRectCollide(cat.x,cat.y,cat.r,w)){
-        cat.x -= vx;
-        break;
-      }
+      if(circleRectCollide(cat.x,cat.y,cat.r,w)){ cat.x -= vx; break; }
     }
     cat.y += vy;
     for(const w of levels[L].walls){
-      if(circleRectCollide(cat.x,cat.y,cat.r,w)){
-        cat.y -= vy;
-        break;
-      }
+      if(circleRectCollide(cat.x,cat.y,cat.r,w)){ cat.y -= vy; break; }
     }
     cat.x = clamp(cat.x, cat.r, cv.width - cat.r);
     cat.y = clamp(cat.y, cat.r, cv.height - cat.r);
@@ -417,7 +413,6 @@
 
   function drawSpikes(){
     ctx.save();
-    ctx.fillStyle = "rgba(255,105,180,.22)";
     ctx.strokeStyle = "rgba(255,105,180,.8)";
     ctx.lineWidth = 2;
     for(const s of levels[L].spikes){
@@ -545,16 +540,14 @@
     if(key["arrowright"]) ax += 1;
     if(key["arrowup"]) ay -= 1;
     if(key["arrowdown"]) ay += 1;
-    ax += stick1.dx;
-    ay += stick1.dy;
+    ax += stick1.dx; ay += stick1.dy;
 
     let bx = 0, by = 0;
     if(key["a"]) bx -= 1;
     if(key["d"]) bx += 1;
     if(key["w"]) by -= 1;
     if(key["s"]) by += 1;
-    bx += stick2.dx;
-    by += stick2.dy;
+    bx += stick2.dx; by += stick2.dy;
 
     const al = Math.hypot(ax,ay) || 1;
     const bl = Math.hypot(bx,by) || 1;
@@ -608,17 +601,26 @@
 
     requestAnimationFrame(step);
   }
-
   requestAnimationFrame(step);
 
-  restartBtn.addEventListener("click", () => startLevel(0));
+  // ---------- UI actions ----------
+  restartBtn.addEventListener("click", () => {
+    running = true;
+    quizOverlay.style.display = "none";
+    winOverlay.style.display = "none";
+    try{ winMusic.pause(); winMusic.currentTime = 0; }catch(e){}
+    rewardShown.style.display = "none";
+    rewardHidden.style.display = "block";
+    startLevel(0);
+    requestAnimationFrame(step);
+  });
 
+  // ---------- Quiz logic ----------
   function norm(s){ return (s||"").trim().toUpperCase(); }
 
   quizCheck.addEventListener("click", () => {
     const a1 = norm(q1.value);
     const a2 = norm(q2.value);
-
     if(a1 === norm(SECRET_WORD) && a2 === "3"){
       quizOverlay.style.display = "none";
       winOverlay.style.display = "grid";
@@ -628,17 +630,33 @@
     }
   });
 
-  playMusic.addEventListener("click", async () => {
-    try { await winMusic.play(); } catch(e) {}
+  // ---------- Reward click (music + show photo) ----------
+  claimReward.addEventListener("click", async () => {
+    rewardHidden.style.display = "none";
+    rewardShown.style.display = "block";
+
+    try{
+      winMusic.currentTime = 0;
+      winMusic.load();
+      await winMusic.play();
+    } catch(e){
+      // jeśli iPhone marudzi, to i tak pokaże zdjęcie
+    }
   });
 
-  closeWin.addEventListener("click", () => {
+  function closeAll(){
     winOverlay.style.display = "none";
-    try { winMusic.pause(); winMusic.currentTime = 0; } catch(e) {}
+    quizOverlay.style.display = "none";
+    try{ winMusic.pause(); winMusic.currentTime = 0; }catch(e){}
+    rewardShown.style.display = "none";
+    rewardHidden.style.display = "block";
     running = true;
     startLevel(0);
     requestAnimationFrame(step);
-  });
+  }
+
+  closeWin.addEventListener("click", closeAll);
+  closeWin2.addEventListener("click", closeAll);
 })();
 </script>
 </body>
